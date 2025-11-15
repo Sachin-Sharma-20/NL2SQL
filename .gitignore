@@ -1,41 +1,59 @@
-# Python cache and compiled files
+# ------------------------------
+# Python Cache / Bytecode
+# ------------------------------
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Virtual environments
+# ------------------------------
+# Virtual Environments
+# ------------------------------
 .venv/
 venv/
-env/
 ENV/
+env/
+backend/.venv/
+frontend/.venv/
 
-# Environment files
+# ------------------------------
+# Environment Variables
+# ------------------------------
 .env
-.env.*
+backend/.env
+frontend/.env
 
-# IDE / Editor settings
+# ------------------------------
+# OS / Editor Files
+# ------------------------------
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
 
-# OS generated files
-.DS_Store
-Thumbs.db
-
+# ------------------------------
 # Logs
+# ------------------------------
 *.log
 
-# Database files (ignore raw data)
+# ------------------------------
+# Database Files
+# ------------------------------
+# Ignore all .tbl files anywhere
 *.tbl
+
+# Allow database/db scripts
+!database/db/full_load_into_mysql.sh
+!database/db/load_tables.sh
+
+# Ignore mysql dumps
 *.sql
 *.db
 *.sqlite3
 
-# Keep important scripts and generators
-!database/*.sh
-!database/tpch-dbgen/**
-
-# Frontend / Node build artifacts
+# ------------------------------
+# Frontend builds (if any)
+# ------------------------------
 node_modules/
 dist/
 build/
