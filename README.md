@@ -116,7 +116,7 @@ streamlit run app.py
 ## Project Structure
 
 ```
-NLP2SQL/
+NL2SQL/
 ├── backend/
 │   ├── main.py
 │   ├── prompts/
