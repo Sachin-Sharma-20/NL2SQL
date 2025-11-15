@@ -6,3 +6,4 @@ def get_full_db_schema() -> str:
     This wrapper can be extended later to filter relevant tables (using embeddings or LLM).
     """
     return extract_db_schema()
+

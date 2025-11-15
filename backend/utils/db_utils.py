@@ -172,3 +172,4 @@ def execute_sql_query(sql_query: str):
         return results, prettified
     except Exception as e:
         return {"error": f"SQL execution/DB error: {e}"}, None
+
