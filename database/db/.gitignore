@@ -1,5 +1,9 @@
-# Ignore everything
-*
+# Ignore all .tbl data files
+*.tbl
 
-# But keep this file itself (so folder stays in repo)
+# Keep scripts
+!full_load_into_mysql.sh
+!load_tables.sh
+
+# Keep folder
 !.gitignore
