@@ -189,3 +189,4 @@ if data:
     st.markdown('<div class="section-label">Generated SQL</div>', unsafe_allow_html=True)
     st.markdown(f"<div class='sql-box'>{data.get('raw_sql','')}</div>",
                 unsafe_allow_html=True)
+

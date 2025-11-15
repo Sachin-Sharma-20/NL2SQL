@@ -42,3 +42,4 @@ You are a ruthless MySQL SQL expert. Convert the question to ONE valid query. Be
 """
 
     return prompt
+    

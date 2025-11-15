@@ -226,3 +226,4 @@ def download_csv(filename: str):
     if not os.path.isfile(path):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path, filename=filename, media_type="text/csv")
+
