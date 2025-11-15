@@ -1,16 +1,3 @@
----
-
-# NLP2SQL — Natural Language to SQL Conversion
-
-This project converts natural language queries into SQL statements using the Gemini API and executes them on a MySQL database built from the TPC-H dataset.
-
-It includes:
-
-* **FastAPI backend** for query generation and schema extraction
-* **MySQL database** setup using the TPC-H benchmark
-* **Frontend app** for testing queries and viewing results
-
----
 
 ## Project Summary
 
@@ -39,12 +26,6 @@ source .venv/bin/activate        # On Windows: .venv\Scripts\activate
 ```
 
 ### 3. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-If you want to install subproject dependencies individually:
 
 ```bash
 pip install -r backend/requirements.txt
@@ -89,7 +70,7 @@ This script will:
 * Create all required tables
 * Load `.tbl` data files into MySQL
 
-> ⚠️ `.tbl` files are ignored in Git and will not be pushed to the repository.
+`.tbl` files are ignored in Git and will not be pushed to the repository.
 
 ---
 
