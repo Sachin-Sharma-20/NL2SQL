@@ -12,6 +12,7 @@ echo
 
 MYSQL="mysql -u $USER -p$PASS --local-infile=1"
 
+
 echo "🔹 Creating database '$DBNAME'..."
 $MYSQL -e "DROP DATABASE IF EXISTS $DBNAME; CREATE DATABASE $DBNAME; USE $DBNAME;"
 

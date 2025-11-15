@@ -9,6 +9,7 @@ USER="root"
 PASS="sachin123"  # <-- change this to your MySQL password
 MYSQL="mysql -u $USER -p$PASS --local-infile=1"
 
+
 TABLES=(REGION NATION PART SUPPLIER PARTSUPP CUSTOMER ORDERS LINEITEM)
 
 
