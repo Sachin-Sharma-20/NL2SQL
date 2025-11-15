@@ -2,134 +2,190 @@ import streamlit as st
 import requests
 import pandas as pd
 import os
+import re
 from dotenv import load_dotenv
 
-# --- Load environment variables ---
 load_dotenv()
+
 BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000/query")
 
-# --- Streamlit Page Config ---
-st.set_page_config(page_title="NL2SQL", layout="wide")
+st.set_page_config(page_title="Natural Query Engine", layout="wide")
 
-# --- Custom CSS Styling ---
+# ---------------------- CSS ----------------------
 st.markdown("""
-    <style>
-    /* Main layout */
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        max-width: 1100px;
-    }
+<style>
 
-    /* Title */
-    h1 {
-        color: #00B4D8;
-        text-align: center;
-        font-size: 2.4rem;
-        margin-bottom: 1rem;
-    }
+header[data-testid="stHeader"] {display: none;}
+footer {display: none;}
 
-    /* Subtitle */
-    p, .stMarkdown {
-        color: #d1d5db;
-        font-size: 1rem;
-    }
+.custom-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 58px;
+    background-color: #181818;
+    border-bottom: 1px solid #2e2e2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
 
-    /* Buttons */
-    div.stButton > button {
-        width: 100%;
-        border-radius: 10px;
-        height: 3rem;
-        font-weight: 600;
-        background: linear-gradient(90deg, #0077b6, #00b4d8);
-        color: white;
-        border: none;
-        box-shadow: 0 0 10px rgba(0, 180, 216, 0.5);
-    }
-    div.stButton > button:hover {
-        background: linear-gradient(90deg, #00b4d8, #48cae4);
-        color: #fff;
-    }
+.custom-header-title {
+    font-size: 1.4rem;
+    font-weight: 650;
+    color: #f3f3f3;
+}
 
-    /* SQL code block */
-    pre {
-        background-color: #1E1E1E !important;
-        border-radius: 10px;
-        padding: 1rem !important;
-        font-size: 0.95rem;
-        line-height: 1.6;
-        color: #80ed99 !important;
-    }
+/* push content below header */
+.block-container {
+    padding-top: 100px !important;
+}
 
-    /* Section headers */
-    .section-header {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #90e0ef;
-        margin-top: 2rem;
-        margin-bottom: 0.8rem;
-    }
+/* center content container */
+.center-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    /* Dataframe styling */
-    div[data-testid="stDataFrame"] {
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid #2b2b2b;
-    }
-    </style>
+.label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.stTextArea textarea {
+    background: #1e1e1e !important;
+    border: 1px solid #333 !important;
+    border-radius: 6px !important;
+    color: white !important;
+    font-size: 0.95rem !important;
+}
+
+.stButton>button {
+    background: #2c7efb !important;
+    color: white !important;
+    padding: 7px 18px !important;
+    border-radius: 6px !important;
+    font-size: 0.95rem;
+    margin-top: 8px;
+}
+
+.result-box {
+    background: #1a1a1a;
+    border: 1px solid #2d2d2d;
+    padding: 14px;
+    border-radius: 6px;
+    color: #e5e5e5;
+    line-height: 1.45;
+    margin-top: 8px;
+    font-size: 0.95rem;
+}
+
+.sql-box {
+    background:#111111;
+    border:1px solid #2c2c2c;
+    padding:12px;
+    border-radius:6px;
+    font-family:monospace;
+    font-size:0.9rem;
+    white-space: pre-wrap;
+    color:#dcdcdc;
+}
+
+.section-label {
+    font-size:1rem;
+    font-weight:600;
+    color:white;
+    margin-top:25px;
+    margin-bottom:6px;
+}
+
+</style>
+
+<div class="custom-header">
+    <div class="custom-header-title">Natural Query Engine</div>
+</div>
+
 """, unsafe_allow_html=True)
 
-# --- Header ---
-st.title("Natural Language → SQL Query")
 
-st.markdown("""
-Turn your plain English questions into live SQL queries.
-Ask about your database naturally — We will do the translation and execution.
-""")
+# ---------------------- STATE ----------------------
+if "last" not in st.session_state:
+    st.session_state.last = None
 
-# --- User Input ---
-query_input = st.text_area(
-    "Ask your question:",
-    height=100,
-    placeholder="e.g. Show total revenue for each region in 2023"
+
+# ---------------------- INPUT AREA ----------------------
+st.markdown('<div class="center-container">', unsafe_allow_html=True)
+st.markdown('<div class="label">Ask a question</div>', unsafe_allow_html=True)
+
+query = st.text_area(
+    "Query Input",
+    height=80,
+    placeholder="e.g., Show top 20 customers by revenue",
+    label_visibility="collapsed"
 )
 
-# --- Run Query Button ---
 if st.button("Run Query"):
-    if not query_input.strip():
-        st.warning("Please enter a question first.")
+    if not query.strip():
+        st.warning("Enter a valid question.")
     else:
-        with st.spinner("Thinking... Generating SQL and fetching data..."):
+        with st.spinner("Processing query..."):
             try:
-                response = requests.post(
+                resp = requests.post(
                     BACKEND_URL,
-                    json={"question": query_input, "session_id": "default"},
-                    timeout=90
+                    json={"question": query, "session_id": "default"},
+                    timeout=None  # allow long-running queries
                 )
-                if response.status_code == 200:
-                    data = response.json()
-                    # Query Result Section
-                    result = data.get("results_data", [])
-                    
-                    if data.get("conversational_summary"):
-                        st.markdown('<div class="section-header">Summary</div>', unsafe_allow_html=True)
-                        st.success(data["conversational_summary"])
+                st.session_state.last = resp.json()
 
-                    if isinstance(result, list) and len(result) > 0:
-                        df = pd.DataFrame(result)
-                        st.markdown('<div class="section-header">Query Result</div>', unsafe_allow_html=True)
-                        st.dataframe(df, use_container_width=True)
-                    else:
-                        st.info("No results found for your query.")
-                    
-                    # SQL Section
-                    st.markdown('<div class="section-header">Generated SQL</div>', unsafe_allow_html=True)
-                    st.code(data.get("raw_sql", "No SQL generated"), language="sql")
+            except Exception as e:
+                st.error(f"Backend error: {e}")
 
-                    # Conversational Summary
+st.markdown('</div>', unsafe_allow_html=True)  # close center container
 
-                else:
-                    st.error(f"Server error ({response.status_code}): {response.text}")
 
-            except requests.exceptions.RequestException as e:
-                st.error(f"Connection failed: {e}")
+# ---------------------- RESULTS ----------------------
+data = st.session_state.last
+
+if data:
+
+    # Summary
+    st.markdown('<div class="section-label">Summary</div>', unsafe_allow_html=True)
+    st.markdown(f"<div class='result-box'>{data.get('conversational_summary','')}</div>",
+                unsafe_allow_html=True)
+
+    # Preview table
+    st.markdown('<div class="section-label">Preview (first rows)</div>', unsafe_allow_html=True)
+    preview = data.get("preview_rows", [])
+    if preview:
+        st.dataframe(pd.DataFrame(preview), use_container_width=True, height=260)
+    else:
+        st.info("No preview available.")
+
+    # CSV download
+    st.markdown('<div class="section-label">Full CSV</div>', unsafe_allow_html=True)
+    url = data.get("csv_download_url", "")
+    fname = data.get("csv_filename", "")
+    if url:
+        try:
+            file_bytes = requests.get(url).content
+            st.download_button(
+                "⬇ Download CSV",
+                file_bytes,
+                mime="text/csv",
+                file_name=fname
+            )
+        except:
+            st.error("Failed to download CSV.")
+    else:
+        st.info("No CSV generated.")
+
+    # SQL shown
+    st.markdown('<div class="section-label">Generated SQL</div>', unsafe_allow_html=True)
+    st.markdown(f"<div class='sql-box'>{data.get('raw_sql','')}</div>",
+                unsafe_allow_html=True)
